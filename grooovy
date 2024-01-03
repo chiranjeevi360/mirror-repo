@@ -1,0 +1,55 @@
+import hudson.model.*
+import jenkins.model.*
+import java.text.SimpleDateFormat
+import java.util.*
+
+def target_date = Date.parse('yyyy-MM-dd', '2023-12-31')
+def jenkins = Jenkins.instance
+def data = []
+try{
+def all_jobs =jenkins.getItems(Job)
+  for(int i =0 ; i <=all_jobs.size() ; i++){
+    job = all_jobs[i]
+    if(job == null){
+    continue
+    }
+    //print(job)
+    lastBuild = job.getLastBuild()
+    def job_name = job.fullName
+    def job_creator = ''
+    def lastbuildby=''
+    def lastbuilddate=''
+    def actions = job.getActions(hudson.model.CauseAction)
+    if (actions) {
+        job_creator = actions.first().causes.first().userName        
+    }
+    if (lastBuild) {
+        lastbuild_date = new Date(lastBuild.getTimeInMillis())
+    	def dateFormat = new SimpleDateFormat('yyyy-MM-dd')
+		def formattedDate = dateFormat.format(lastbuild_date)
+    	def target_date_f = dateFormat.format(target_date)
+       def buildCauses = lastBuild.getCauses()
+        if (buildCauses) {
+            lastbuildby = buildCauses.first().getUserName()
+      
+   		if(target_date_f.compareTo(formattedDate) >=0){
+          data.add([job.fullName,job_creator,lastbuildby,formattedDate].join(':'))
+        }
+    
+       
+    
+        }
+    }
+    
+     
+  }
+  println(data.join('-'))
+}
+catch(Exception e){
+  println(e)
+}
+
+
+
+
+   
